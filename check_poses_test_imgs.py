@@ -9,7 +9,7 @@
 from pytless import inout, renderer, misc
 import os
 import numpy as np
-import scipy.misc
+
 import matplotlib.pyplot as plt
 import imageio
 
@@ -20,7 +20,7 @@ im_step = 100 # Consider every im_step-th image
 
 # Path to the T-LESS dataset.
 # Which you can download using the t-less_download.py script. 
-data_path = '/Add/your/path/here/t-less_v2'
+data_path = '../t-less_v2'
 
 # Path to the folder in which the images produced by this script will be saved
 output_dir = os.path.join(data_path, 'output_check_poses_test_imgs')
@@ -71,10 +71,10 @@ for scene_id in scene_ids:
         #-----------------------------------------------------------------------
         # Load RGB image
         rgb_path = rgb_path_mask.format(device, scene_id, im_id, rgb_ext[device])
-        rgb = imageio.imread(rgb_path)
+        rgb = imageio.v2.imread(rgb_path)
 
         im_size = (rgb.shape[1], rgb.shape[0])
-        vis_rgb = np.zeros(rgb.shape, np.float)
+        vis_rgb = np.zeros(rgb.shape, float)
         for gt in scene_gt[im_id]:
             model = models[gt['obj_id']]
             R = gt['cam_R_m2c']
@@ -87,7 +87,7 @@ for scene_id in scene_ids:
             # Draw the bounding box of the object
             ren_rgb = misc.draw_rect(ren_rgb, gt['obj_bb'])
 
-            vis_rgb += 0.7 * ren_rgb.astype(np.float)
+            vis_rgb += 0.7 * ren_rgb.astype(float)
 
         # Save the visualization
         vis_rgb = 0.6 * vis_rgb + 0.4 * rgb
@@ -100,12 +100,12 @@ for scene_id in scene_ids:
         if device != 'canon':
             # Load depth image
             depth_path = depth_path_mask.format(device, scene_id, im_id, rgb_ext[device])
-            depth = imageio.imread(depth_path)  # Unit: 0.1 mm
-            depth = depth.astype(np.float) * 0.1  # Convert to mm
+            depth = imageio.v2.imread(depth_path)  # Unit: 0.1 mm
+            depth = depth.astype(float) * 0.1  # Convert to mm
 
             # Render the objects at the ground truth poses
             im_size = (depth.shape[1], depth.shape[0])
-            ren_depth = np.zeros(depth.shape, np.float)
+            ren_depth = np.zeros(depth.shape, float)
             for gt in scene_gt[im_id]:
                 model = models[gt['obj_id']]
                 R = gt['cam_R_m2c']
@@ -118,12 +118,12 @@ for scene_id in scene_ids:
                 # are closer than the surfaces rendered before
                 visible_mask = np.logical_or(ren_depth == 0, ren_depth_obj < ren_depth)
                 mask = np.logical_and(ren_depth_obj != 0, visible_mask)
-                ren_depth[mask] = ren_depth_obj[mask].astype(np.float)
+                ren_depth[mask] = ren_depth_obj[mask].astype(float)
 
             # Calculate the depth difference at pixels where both depth maps
             # are valid
             valid_mask = (depth > 0) * (ren_depth > 0)
-            depth_diff = valid_mask * (depth - ren_depth.astype(np.float))
+            depth_diff = valid_mask * (depth - ren_depth.astype(float))
 
             # Save the visualization
             vis_depth_path = vis_depth_path_mask.format(scene_id, device,
@@ -131,5 +131,5 @@ for scene_id in scene_ids:
             plt.matshow(depth_diff)
             plt.title('captured - rendered depth [mm]')
             plt.colorbar()
-            plt.savefig(vis_depth_path, pad=0)
+            plt.savefig(vis_depth_path)
             plt.close()

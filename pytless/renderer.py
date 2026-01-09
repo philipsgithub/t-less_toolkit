@@ -289,9 +289,9 @@ def render(model, im_size, K, R, t, clip_near=100, clip_far=2000,
             colors = np.ones((model['pts'].shape[0], 4), np.float32) * 0.5
     else:
         colors = np.tile(list(surf_color) + [1.0], [model['pts'].shape[0], 1])
-    vertices_type = [('a_position', np.float32, 3),
-                     #('a_normal', np.float32, 3),
-                     ('a_color', np.float32, colors.shape[1])]
+    vertices_type = [('a_position', np.float32, (3,)),
+                     #('a_normal', np.float32, (3,)),
+                     ('a_color', np.float32, (colors.shape[1],))]
     vertices = np.array(list(zip(model['pts'], colors)), vertices_type)
 
     # Rendering

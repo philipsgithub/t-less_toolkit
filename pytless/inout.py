@@ -5,10 +5,14 @@ import numpy as np
 import struct
 # import yaml
 import ruamel.yaml as yaml
+from ruamel.yaml import YAML
+
+yaml_parser = YAML(typ="safe")
 
 def load_info(path):
     with open(path, 'r') as f:
-        info = yaml.load(f, Loader=yaml.CLoader)
+        #info = yaml.load(f, Loader=yaml.Loader)
+        info = yaml_parser.load(f)
         for eid in info.keys():
             if 'cam_K' in info[eid].keys():
                 info[eid]['cam_K'] = np.array(info[eid]['cam_K']).reshape(
@@ -35,7 +39,8 @@ def save_info(path, info):
 
 def load_gt(path):
     with open(path, 'r') as f:
-        gts = yaml.load(f, Loader=yaml.CLoader)
+        #gts = yaml.load(f, Loader=yaml.Loader)
+        gts = yaml_parser.load(f)
         for im_id, gts_im in gts.items():
             for gt in gts_im:
                 if 'cam_R_m2c' in gt.keys():
@@ -67,7 +72,7 @@ def load_colors(path):
     """
     with open(path, 'r') as f:
         lines = f.read().splitlines()
-        colors = [map(float, l.split(' ')) for l in lines]
+        colors = [tuple(map(float, l.split(' '))) for l in lines]
         return colors
 
 def load_ply(path):
@@ -121,20 +126,20 @@ def load_ply(path):
 
     # Prepare data structures
     model = {}
-    model['pts'] = np.zeros((n_pts, 3), np.float)
+    model['pts'] = np.zeros((n_pts, 3), float)
     if n_faces > 0:
-        model['faces'] = np.zeros((n_faces, face_n_corners), np.float)
+        model['faces'] = np.zeros((n_faces, face_n_corners), float)
 
     pt_props_names = [p[0] for p in pt_props]
     is_normal = False
     if {'nx', 'ny', 'nz'}.issubset(set(pt_props_names)):
         is_normal = True
-        model['normals'] = np.zeros((n_pts, 3), np.float)
+        model['normals'] = np.zeros((n_pts, 3), float)
 
     is_color = False
     if {'red', 'green', 'blue'}.issubset(set(pt_props_names)):
         is_color = True
-        model['colors'] = np.zeros((n_pts, 3), np.float)
+        model['colors'] = np.zeros((n_pts, 3), float)
 
     formats = { # For binary format
         'float': ('f', 4),
